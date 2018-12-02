@@ -148,7 +148,7 @@ class WordSelectController(object):
         with open(filename + '.pkl', 'wb') as f:
             pickle.dump(state, f)
 
-        with open(filename + '.txt', 'w') as f:
+        with open(filename + '.txt', 'w', encoding='utf-8') as f:
             for word in self.selected_words:
                 f.write(word)
 

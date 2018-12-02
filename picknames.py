@@ -46,7 +46,7 @@ class NameSelectController(object):
 
     def load_state(self):
         file_path = 'words-selected.txt'
-        with open(file_path, 'r') as f:
+        with open(file_path, 'r', encoding='utf-8') as f:
             for line in f:
                 for word in line:
                     self.candidate_words.add(word)
@@ -54,7 +54,7 @@ class NameSelectController(object):
 
         file_path = 'names-selected.txt'
         if os.path.exists(file_path):
-            with open(file_path, 'r') as f:
+            with open(file_path, 'r', encoding='utf-8') as f:
                 for line in f:
                     w1 = line[0]
                     w2 = line[1]
@@ -63,7 +63,7 @@ class NameSelectController(object):
 
         file_path = 'names-refused.txt'
         if os.path.exists(file_path):
-            with open(file_path, 'r') as f:
+            with open(file_path, 'r', encoding='utf-8') as f:
                 for line in f:
                     w1 = line[0]
                     w2 = line[1]
@@ -76,12 +76,12 @@ class NameSelectController(object):
         #self.refused_slb.setlist(names)
 
     def save_state(self):
-        with open('names-selected.txt', 'w') as f:
+        with open('names-selected.txt', 'w', encoding='utf-8') as f:
             names = sorted([w1 + w2 for (w1, w2) in self.selected_names])
             for name in names:
                 f.write(name + '\n')
 
-        with open('names-refused.txt', 'w') as f:
+        with open('names-refused.txt', 'w', encoding='utf-8') as f:
             names = sorted([w1 + w2 for (w1, w2) in self.refused_names])
             for name in names:
                 f.write(name + '\n')
