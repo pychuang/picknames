@@ -87,12 +87,14 @@ class SoundController(object):
 
 class SpellingController(object):
 
-    def __init__(self, parent_view, row, spelling, sound_words_pairs):
+    def __init__(self, parent_view, row, spelling, chewing, sound_words_pairs):
         self.spelling = spelling
+        self.chewing = chewing
         self.sound_words_pairs = sound_words_pairs
         self.selected = False
 
-        self.spelling_button = tkinter.Button(parent_view, text=spelling, command=self.toggle_spelling_button)
+        display_text = "%s %s" % (chewing, spelling)
+        self.spelling_button = tkinter.Button(parent_view, text=display_text, command=self.toggle_spelling_button)
         self.spelling_button.grid(row=row, column=0, sticky=tkinter.NW+tkinter.SE)
         self.sounds_frame = tkinter.Frame(parent_view)
         self.sounds_frame.grid(row=row, column=1, sticky=tkinter.NW)
@@ -159,12 +161,17 @@ class WordSelectController(object):
 
 
     def __init__(self, parent_view):
+        self.sf = Pmw.ScrolledFrame(parent_view, labelpos=tkinter.N, label_text='音 & 字')
+        self.sf.pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
+
+        self.spelling_controllers = []
+
         data = None
         with open('pickwords-data.pkl', 'rb') as f:
             data = pickle.load(f)
 
         # [
-        #   ("Pan", [
+        #   ("Pan", "ㄅㄢ", [
         #               ( "ㄅㄢˋ", [
         #                           "半", "辦"]
         #               ),
@@ -174,15 +181,8 @@ class WordSelectController(object):
         #   ...
         # ]
 
-        self.sf = Pmw.ScrolledFrame(parent_view, labelpos=tkinter.N, label_text='音 & 字')
-        self.sf.pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
-
-        self.spelling_controllers = []
-
-        frame = self.sf.interior()
-
-        for i, (spelling, sound_words_pairs) in enumerate(data):
-            spc = SpellingController(frame, i, spelling, sound_words_pairs)
+        for i, (spelling, chewing, sound_words_pairs) in enumerate(data):
+            spc = SpellingController(self.sf.interior(), i, spelling, chewing, sound_words_pairs)
             self.spelling_controllers.append(spc)
         self.load_state()
 
