@@ -17,17 +17,19 @@ class WordController(object):
 
     def toggle_word_button(self):
         if self.selected:
-            self.button.config(relief=tkinter.RAISED)
+            self.deselect_word_button()
         else:
-            self.button.config(relief=tkinter.SUNKEN)
-
-        self.selected = not self.selected
+            self.select_word_button()
 
 
-    def enable_word_button(self):
+    def select_word_button(self):
         self.selected = True
         self.button.config(relief=tkinter.SUNKEN)
 
+
+    def deselect_word_button(self):
+        self.selected = False
+        self.button.config(relief=tkinter.RAISED)
 
     def destroy(self):
         self.button.destroy()
@@ -59,7 +61,7 @@ class SoundController(object):
 
         for wc in self.word_controllers:
             if wc.word in selected_words:
-                wc.enable_word_button()
+                wc.select_word_button()
 
 
     def get_selected_words(self):
