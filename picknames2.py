@@ -126,7 +126,7 @@ class NameSelectController(object):
                 for sound, words in selected_spelling_sound_words_mapping[spelling2].items():
                     words2.update(words)
 
-                print("pair %d %d: %s, %s" % (i, j, words1, words2))
+                #print("pair %d %d: %s, %s" % (i, j, words1, words2))
                 spc = SpellingPairController(self.spelling_pairs_sf.interior(), self, i, j, spelling1, words1, spelling2, words2)
                 self.spelling_pair_controllers.append(spc)
 
@@ -242,7 +242,7 @@ class NameSelectController(object):
                 names_with_scores.append((w1, w2, score))
 
         self.candidate_names_with_score = sorted(names_with_scores, key=lambda tup: tup[2])
-        print(self.candidate_names_with_score)
+        #print(self.candidate_names_with_score)
         self.num_candidates_label.config(text=len(self.candidate_names_with_score))
         self.update_current_candidate_name()
 
