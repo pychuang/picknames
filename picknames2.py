@@ -114,7 +114,7 @@ class NameSelectController(object):
         if os.path.exists(self.SELECTED_WORDS_FILE_NAME):
             with open(self.SELECTED_WORDS_FILE_NAME, 'rb') as f:
                 selected_spelling_sound_words_mapping = pickle.load(f)
-        print('LOAD:', selected_spelling_sound_words_mapping)
+        #print('LOAD:', selected_spelling_sound_words_mapping)
 
         for i, spelling1 in enumerate(selected_spelling_sound_words_mapping):
             words1 = set()
