@@ -38,20 +38,24 @@ class SoundController(object):
     def __init__(self, parent_view, row, sound, words):
         self.sound = sound
         self.candidate_words = words
-        self.selected = False
 
-        self.sound_button = tkinter.Button(parent_view, text=sound, command=self.toggle_sound_button)
-        self.sound_button.grid(row=row, column=0, sticky=tkinter.NW+tkinter.SE)
+        self.sound_label = tkinter.Label(parent_view, text=sound)
+        self.sound_label.grid(row=row, column=0, sticky=tkinter.NW+tkinter.SE)
         self.words_frame = tkinter.Frame(parent_view)
         self.words_frame.grid(row=row, column=1, sticky=tkinter.NW)
 
         self.word_controllers = []
+        for i, word in enumerate(self.candidate_words):
+            try:
+                wc = WordController(self.words_frame, i, word)
+                self.word_controllers.append(wc)
+            except Exception as e:
+                print(e)
+
 
     def load_state(self, selected_words):
         if not selected_words:
             return
-
-        self.toggle_sound_button()
 
         for wc in self.word_controllers:
             if wc.word in selected_words:
@@ -59,35 +63,12 @@ class SoundController(object):
 
 
     def get_selected_words(self):
-        if not self.selected:
-            return None
-
         selected_words = []
         for wc in self.word_controllers:
             if wc.selected:
                  selected_words.append(wc.word)
 
         return selected_words
-
-
-    def toggle_sound_button(self):
-        if self.selected:
-            self.sound_button.config(relief=tkinter.RAISED)
-            self.deselect_sound()
-        else:
-            self.sound_button.config(relief=tkinter.SUNKEN)
-            self.select_sound(self.sound)
-
-        self.selected = not self.selected
-
-
-    def select_sound(self, sound):
-        for i, word in enumerate(self.candidate_words):
-            try:
-                wc = WordController(self.words_frame, i, word)
-                self.word_controllers.append(wc)
-            except Exception as e:
-                print(e)
 
 
     def deselect_sound(self):
@@ -98,7 +79,7 @@ class SoundController(object):
 
     def destroy(self):
         self.deselect_sound()
-        self.sound_button.destroy()
+        self.sound_label.destroy()
         self.words_frame.destroy()
 
 
