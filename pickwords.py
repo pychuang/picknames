@@ -7,11 +7,13 @@ import Pmw
 import tkinter
 
 class WordController(object):
-    def __init__(self, parent_view, delegate, word):
+
+    def __init__(self, parent_view, column, word):
         self.word = word
         self.button = tkinter.Button(parent_view, text=word, command=self.toggle_word_button)
-        self.delegate = delegate
+        self.button.grid(row=0, column=column)
         self.selected = False
+
 
     def toggle_word_button(self):
         if self.selected:
@@ -20,145 +22,221 @@ class WordController(object):
             self.button.config(relief=tkinter.SUNKEN)
 
         self.selected = not self.selected
-        self.delegate.update_selected_words()
+
 
     def enable_word_button(self):
         self.selected = True
         self.button.config(relief=tkinter.SUNKEN)
+
 
     def destroy(self):
         self.button.destroy()
 
 
 class SoundController(object):
-    def __init__(self, parent_view, delegate, sound, words_arrays, selected_words):
+
+    def __init__(self, parent_view, row, sound, words):
         self.sound = sound
-        self.delegate = delegate
-        self.candidate_words_arrays = words_arrays
+        self.candidate_words = words
         self.selected = False
 
         self.sound_button = tkinter.Button(parent_view, text=sound, command=self.toggle_sound_button)
+        self.sound_button.grid(row=row, column=0, sticky=tkinter.NW+tkinter.SE)
         self.words_frame = tkinter.Frame(parent_view)
+        self.words_frame.grid(row=row, column=1, sticky=tkinter.NW)
 
         self.word_controllers = []
 
-        if selected_words is not None:
-            self.selected_words = selected_words
-            self.toggle_sound_button()
-        else:
-            self.selected_words = set()
+    def load_state(self, selected_words):
+        if not selected_words:
+            return
 
-    def enable_sound_button(self):
-        self.selected = True
-        self.sound_button.config(relief=tkinter.SUNKEN)
+        self.toggle_sound_button()
+
+        for wc in self.word_controllers:
+            if wc.word in selected_words:
+                wc.enable_word_button()
+
+
+    def get_selected_words(self):
+        if not self.selected:
+            return None
+
+        selected_words = []
+        for wc in self.word_controllers:
+            if wc.selected:
+                 selected_words.append(wc.word)
+
+        return selected_words
+
 
     def toggle_sound_button(self):
         if self.selected:
             self.sound_button.config(relief=tkinter.RAISED)
-            self.deselect_sound(self.sound)
+            self.deselect_sound()
         else:
             self.sound_button.config(relief=tkinter.SUNKEN)
             self.select_sound(self.sound)
 
         self.selected = not self.selected
 
+
     def select_sound(self, sound):
-        for i, a in enumerate(self.candidate_words_arrays):
-            for j, word in enumerate(a):
-                try:
-                    wc = WordController(self.words_frame, self, word)
-                    if word in self.selected_words:
-                        wc.enable_word_button()
-                    wc.button.grid(row=i, column=j)
-                    self.word_controllers.append(wc)
-                except Exception as e:
-                    print(e)
+        for i, word in enumerate(self.candidate_words):
+            try:
+                wc = WordController(self.words_frame, i, word)
+                self.word_controllers.append(wc)
+            except Exception as e:
+                print(e)
 
 
-    def deselect_sound(self, sound):
+    def deselect_sound(self):
         for wc in self.word_controllers:
             wc.destroy()
         self.word_controllers = []
-        self.update_selected_words()
 
 
-    def update_selected_words(self):
-        self.selected_words = set()
+    def destroy(self):
+        self.deselect_sound()
+        self.sound_button.destroy()
+        self.words_frame.destroy()
 
-        for wc in self.word_controllers:
-            if wc.selected:
-                 self.selected_words.add(wc.word)
-        self.delegate.update_selected_words()
+
+class SpellingController(object):
+
+    def __init__(self, parent_view, row, spelling, sound_words_pairs):
+        self.spelling = spelling
+        self.sound_words_pairs = sound_words_pairs
+        self.selected = False
+
+        self.spelling_button = tkinter.Button(parent_view, text=spelling, command=self.toggle_spelling_button)
+        self.spelling_button.grid(row=row, column=0, sticky=tkinter.NW+tkinter.SE)
+        self.sounds_frame = tkinter.Frame(parent_view)
+        self.sounds_frame.grid(row=row, column=1, sticky=tkinter.NW)
+
+        self.sound_controllers = []
+
+
+    def load_state(self, selected_sound_words_mapping):
+        if not selected_sound_words_mapping:
+            return
+
+        self.toggle_spelling_button()
+
+        for sc in self.sound_controllers:
+            if sc.sound in selected_sound_words_mapping:
+                selected_words = selected_sound_words_mapping[sc.sound]
+                sc.load_state(selected_words)
+
+
+    def get_selected_sounds_state(self):
+        if not self.selected:
+            return None
+
+        selected_sound_words_mapping = {}
+        for sc in self.sound_controllers:
+            selected_words = sc.get_selected_words()
+            if not selected_words:
+                continue
+
+            selected_sound_words_mapping[sc.sound] = selected_words
+
+        return selected_sound_words_mapping
+
+
+    def toggle_spelling_button(self):
+        if self.selected:
+            self.spelling_button.config(relief=tkinter.RAISED)
+            self.deselect_spelling()
+        else:
+            self.spelling_button.config(relief=tkinter.SUNKEN)
+            self.select_spelling()
+
+        self.selected = not self.selected
+
+
+    def select_spelling(self):
+        for i, (sound, words) in enumerate(self.sound_words_pairs):
+            try:
+                sc = SoundController(self.sounds_frame, i, sound, words)
+                self.sound_controllers.append(sc)
+            except Exception as e:
+                print(e)
+
+
+    def deselect_spelling(self):
+        for sc in self.sound_controllers:
+            sc.destroy()
+        self.sound_controllers = []
 
 
 class WordSelectController(object):
-    def __init__(self, parent_view, delegate):
+
+    STATE_FILE_NAME = 'words-selected.pkl'
+
+
+    def __init__(self, parent_view):
         data = None
         with open('pickwords-data.pkl', 'rb') as f:
             data = pickle.load(f)
 
-        sounds = data['sounds']
-        words_arrays_dict = data['words']
+        # [
+        #   ("Pan", [
+        #               ( "ㄅㄢˋ", [
+        #                           "半", "辦"]
+        #               ),
+        #               ...
+        #           ]
+        #   ),
+        #   ...
+        # ]
 
-        file_path = 'words-selected.pkl'
+        self.sf = Pmw.ScrolledFrame(parent_view, labelpos=tkinter.N, label_text='音 & 字')
+        self.sf.pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
+
+        self.spelling_controllers = []
+
+        frame = self.sf.interior()
+
+        for i, (spelling, sound_words_pairs) in enumerate(data):
+            spc = SpellingController(frame, i, spelling, sound_words_pairs)
+            self.spelling_controllers.append(spc)
+        self.load_state()
+
+
+    def load_state(self):
         saved_state = {}
-        if os.path.exists(file_path):
-            with open(file_path, 'rb') as f:
+        if os.path.exists(self.STATE_FILE_NAME):
+            with open(self.STATE_FILE_NAME, 'rb') as f:
                 saved_state = pickle.load(f)
         print('LOAD:', saved_state)
 
-        self.delegate = delegate
-        self.sf = Pmw.ScrolledFrame(parent_view, labelpos=tkinter.N, label_text='音 & 字')
-        self.sf.pack(side=tkinter.LEFT, fill=tkinter.BOTH, expand=True)
+        for spc in self.spelling_controllers:
+            if spc.spelling in saved_state:
+                selected_sound_words_mapping = saved_state[spc.spelling]
+                spc.load_state(selected_sound_words_mapping)
 
-        self.selected_words = set()
-
-        self.sound_controllers = []
-        frame = self.sf.interior()
-
-        for i, sound in enumerate(sounds):
-            if sound in saved_state:
-                selected_words = saved_state[sound]
-            else:
-                selected_words = None
-
-            sc = SoundController(frame, self, sound, words_arrays_dict[sound], selected_words)
-            self.sound_controllers.append(sc)
-
-            sc.sound_button.grid(row=i, column=0, sticky=tkinter.NW+tkinter.SE)
-            sc.words_frame.grid(row=i, column=1, sticky=tkinter.NW)
-
-    def update_selected_words(self):
-        self.selected_words = set()
-
-        for sc in self.sound_controllers:
-            if sc.selected:
-                self.selected_words.update(sc.selected_words)
-        print('WSC: SELECTED WORDS:', self.selected_words)
 
     def save_state(self):
         state = {}
-        for sc in self.sound_controllers:
-            if not sc.selected:
+        for spc in self.spelling_controllers:
+            selected_sounds_state = spc.get_selected_sounds_state()
+            if not selected_sounds_state:
                 continue
-            state[sc.sound] = sc.selected_words
 
-        filename = 'words-selected'
+            state[spc.spelling] = selected_sounds_state
+
         print('SAVE:', state)
-        with open(filename + '.pkl', 'wb') as f:
+        with open(self.STATE_FILE_NAME, 'wb') as f:
             pickle.dump(state, f)
-
-        with open(filename + '.txt', 'w', encoding='utf-8') as f:
-            for word in self.selected_words:
-                f.write(word)
 
 
 class App(object):
+
     def __init__(self, root):
         self.root = root
 
-        self.wsc = WordSelectController(root, self)
-        self.wsc.sf.pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
+        self.wsc = WordSelectController(root)
 
         self.button = tkinter.Button(root, text='離開', fg="red", command=self.quit)
         self.button.pack(side=tkinter.RIGHT)
@@ -169,14 +247,15 @@ class App(object):
         self.button = tkinter.Button(root, text='儲存', fg="red", command=self.save)
         self.button.pack(side=tkinter.RIGHT)
 
-        self.wsc.update_selected_words()
 
     def save(self):
         self.wsc.save_state()
 
+
     def save_and_quit(self):
         self.wsc.save_state()
         self.root.quit()
+
 
     def quit(self):
         self.root.quit()
@@ -190,6 +269,7 @@ def main():
     app = App(root)
     root.mainloop()
     root.destroy()
+
 
 if __name__ == "__main__":
     main()
