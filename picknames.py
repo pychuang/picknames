@@ -6,7 +6,14 @@ import pickle
 import Pmw
 import tkinter
 
+
 class NameSelectController(object):
+
+    SELECTED_WORDS_FILE_NAME = 'words-selected.pkl'
+    SELECTED_NAMES_FILE_NAME = 'names-selected.txt'
+    REFUSED_NAMES_FILE_NAME = 'names-refused.txt'
+
+
     def __init__(self, parent_view):
         self.candidate_words = set()
         self.word1_selected_count = {}
@@ -20,6 +27,7 @@ class NameSelectController(object):
         self.candidate_name = None  # (w,1 w2)
 
         self.frame = tkinter.Frame(parent_view)
+        self.frame.pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
 
         # selected names
         self.selected_slb = Pmw.ScrolledListBox(self.frame, labelpos=tkinter.N, label_text='還不錯')
@@ -45,25 +53,26 @@ class NameSelectController(object):
         self.load_state()
 
     def load_state(self):
-        file_path = 'words-selected.txt'
-        with open(file_path, 'r', encoding='utf-8') as f:
-            for line in f:
-                for word in line:
-                    self.candidate_words.add(word)
-        print('LOAD candidate_words:', self.candidate_words)
+        selected_spelling_sound_words_mapping = {}
+        if os.path.exists(self.SELECTED_WORDS_FILE_NAME):
+            with open(self.SELECTED_WORDS_FILE_NAME, 'rb') as f:
+                selected_spelling_sound_words_mapping = pickle.load(f)
+        print('LOAD:', selected_spelling_sound_words_mapping)
 
-        file_path = 'names-selected.txt'
-        if os.path.exists(file_path):
-            with open(file_path, 'r', encoding='utf-8') as f:
+        for spelling in selected_spelling_sound_words_mapping:
+            for sound, words in selected_spelling_sound_words_mapping[spelling].items():
+                self.candidate_words.update(words)
+
+        if os.path.exists(self.SELECTED_NAMES_FILE_NAME):
+            with open(self.SELECTED_NAMES_FILE_NAME, 'r', encoding='utf-8') as f:
                 for line in f:
                     w1 = line[0]
                     w2 = line[1]
                     self.add_selected_name(w1, w2)
                 #print('LOAD selected_names:', self.selected_names)
 
-        file_path = 'names-refused.txt'
-        if os.path.exists(file_path):
-            with open(file_path, 'r', encoding='utf-8') as f:
+        if os.path.exists(self.REFUSED_NAMES_FILE_NAME):
+            with open(self.REFUSED_NAMES_FILE_NAME, 'r', encoding='utf-8') as f:
                 for line in f:
                     w1 = line[0]
                     w2 = line[1]
@@ -76,12 +85,12 @@ class NameSelectController(object):
         #self.refused_slb.setlist(names)
 
     def save_state(self):
-        with open('names-selected.txt', 'w', encoding='utf-8') as f:
+        with open(self.SELECTED_NAMES_FILE_NAME, 'w', encoding='utf-8') as f:
             names = sorted([w1 + w2 for (w1, w2) in self.selected_names])
             for name in names:
                 f.write(name + '\n')
 
-        with open('names-refused.txt', 'w', encoding='utf-8') as f:
+        with open(self.REFUSED_NAMES_FILE_NAME, 'w', encoding='utf-8') as f:
             names = sorted([w1 + w2 for (w1, w2) in self.refused_names])
             for name in names:
                 f.write(name + '\n')
@@ -136,8 +145,8 @@ class NameSelectController(object):
                 names.append((w1, w2, score))
         self.candidate_names = sorted(names, key=lambda tup: tup[2])
         #print(self.candidate_names)
-        self.update_name_for_selection()
         self.num_candidates_label.config(text=len(self.candidate_names))
+        self.update_name_for_selection()
 
     def update_name_for_selection(self):
         if self.candidate_names:
@@ -178,7 +187,6 @@ class App(object):
         self.root = root
 
         self.nsc = NameSelectController(root)
-        self.nsc.frame.pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
 
         self.button = tkinter.Button(root, text='離開', fg="red", command=self.quit)
         self.button.pack(side=tkinter.RIGHT)
@@ -210,6 +218,7 @@ def main():
     app = App(root)
     root.mainloop()
     root.destroy()
+
 
 if __name__ == "__main__":
     main()
