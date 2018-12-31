@@ -192,7 +192,7 @@ class WordSelectController(object):
         if os.path.exists(self.STATE_FILE_NAME):
             with open(self.STATE_FILE_NAME, 'rb') as f:
                 saved_state = pickle.load(f)
-        print('LOAD:', saved_state)
+        #print('LOAD:', saved_state)
 
         for spc in self.spelling_controllers:
             if spc.spelling in saved_state:
@@ -209,7 +209,7 @@ class WordSelectController(object):
 
             state[spc.spelling] = selected_sounds_state
 
-        print('SAVE:', state)
+        #print('SAVE:', state)
         with open(self.STATE_FILE_NAME, 'wb') as f:
             pickle.dump(state, f)
 
