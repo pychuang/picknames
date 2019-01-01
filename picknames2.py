@@ -37,12 +37,12 @@ class SpellingPairController(object):
 
     def select_spelling_pair_button(self):
         self.selected = True
-        self.button.config(relief=tkinter.SUNKEN)
+        self.button.config(relief=tkinter.SUNKEN, fg="red")
 
 
     def deselect_spelling_pair_button(self):
         self.selected = False
-        self.button.config(relief=tkinter.RAISED)
+        self.button.config(relief=tkinter.RAISED, fg="black")
 
 
     def get_candidate_names(self):
