@@ -24,12 +24,12 @@ class WordController(object):
 
     def select_word_button(self):
         self.selected = True
-        self.button.config(relief=tkinter.SUNKEN)
+        self.button.config(relief=tkinter.SUNKEN, fg="red")
 
 
     def deselect_word_button(self):
         self.selected = False
-        self.button.config(relief=tkinter.RAISED)
+        self.button.config(relief=tkinter.RAISED, fg="black")
 
     def destroy(self):
         self.button.destroy()
