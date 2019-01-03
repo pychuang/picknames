@@ -157,6 +157,7 @@ class SpellingController(object):
 
 class WordSelectController(object):
 
+    DATA_FILE_NAME = '.pickwords.data.pkl'
     STATE_FILE_NAME = 'words-selected.pkl'
 
 
@@ -167,7 +168,7 @@ class WordSelectController(object):
         self.spelling_controllers = []
 
         data = None
-        with open('pickwords-data.pkl', 'rb') as f:
+        with open(self.DATA_FILE_NAME, 'rb') as f:
             data = pickle.load(f)
 
         # [
