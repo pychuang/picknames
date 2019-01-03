@@ -1,12 +1,24 @@
 # picknames
 取中文名字
 
+# Installation
+
+## Windows
+
+從 https://www.python.org/downloads/ 下載並安裝 python 3.x
+
+打開 command prompt，執行
+
+```
+py -m pip install Pmw
+```
+
 # Usage
 
 ## 先執行選字程式
 
-```sh
-$ ./pickwords.py
+```
+pickwords.py
 ```
 
 這個程式會產生一個檔案
@@ -19,14 +31,14 @@ $ ./pickwords.py
 
 * 選擇所有的排列組合
 
-```sh
-$ ./picknames.py
+```
+picknames.py
 ```
 
 * 先選拼音組合，再選擇選漢字組合
 
-```sh
-$ ./picknames2.py
+```
+picknames2.py
 ```
 
 這兩個程式都使用 pickwords.py 產生的 words-selected.pkl 作為輸入
