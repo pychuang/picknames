@@ -54,6 +54,7 @@ class SpellingPairController(object):
 
 class NameSelectController(object):
 
+    SPELLINGS_FILE_NAME = '.picknames2.data.pkl'
     STATE_FILE_NAME = '.picknames2.state.pkl'
     SELECTED_WORDS_FILE_NAME = 'words-selected.pkl'
     SELECTED_NAMES_FILE_NAME = 'names-selected.txt'
@@ -110,18 +111,29 @@ class NameSelectController(object):
         self.load_state()
 
     def load_state(self):
+        spellings = []
+        if os.path.exists(self.SPELLINGS_FILE_NAME):
+            with open(self.SPELLINGS_FILE_NAME, 'rb') as f:
+                spellings = pickle.load(f)
+
         selected_spelling_sound_words_mapping = {}
         if os.path.exists(self.SELECTED_WORDS_FILE_NAME):
             with open(self.SELECTED_WORDS_FILE_NAME, 'rb') as f:
                 selected_spelling_sound_words_mapping = pickle.load(f)
         #print('LOAD:', selected_spelling_sound_words_mapping)
 
-        for i, spelling1 in enumerate(selected_spelling_sound_words_mapping):
+        for i, spelling1 in enumerate(spellings):
+            if spelling1 not in selected_spelling_sound_words_mapping:
+                continue
+
             words1 = set()
             for sound, words in selected_spelling_sound_words_mapping[spelling1].items():
                 words1.update(words)
 
-            for j, spelling2 in enumerate(selected_spelling_sound_words_mapping):
+            for j, spelling2 in enumerate(spellings):
+                if spelling2 not in selected_spelling_sound_words_mapping:
+                    continue
+
                 words2 = set()
                 for sound, words in selected_spelling_sound_words_mapping[spelling2].items():
                     words2.update(words)
