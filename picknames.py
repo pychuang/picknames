@@ -66,6 +66,9 @@ class NameSelectController(object):
         if os.path.exists(self.SELECTED_NAMES_FILE_NAME):
             with open(self.SELECTED_NAMES_FILE_NAME, 'r', encoding='utf-8') as f:
                 for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
                     w1 = line[0]
                     w2 = line[1]
                     self.add_selected_name(w1, w2)
@@ -74,6 +77,9 @@ class NameSelectController(object):
         if os.path.exists(self.REFUSED_NAMES_FILE_NAME):
             with open(self.REFUSED_NAMES_FILE_NAME, 'r', encoding='utf-8') as f:
                 for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
                     w1 = line[0]
                     w2 = line[1]
                     self.add_refused_name(w1, w2)
