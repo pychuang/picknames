@@ -364,7 +364,6 @@ def main():
     Pmw.initialise()
     app = App(root)
     root.mainloop()
-    root.destroy()
 
 
 if __name__ == "__main__":
