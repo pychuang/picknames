@@ -52,6 +52,10 @@ class SpellingPairController(object):
             return None
 
 
+    def destroy(self):
+        self.button.destroy()
+
+
 class NameSelectController(object):
 
     SPELLINGS_FILE_NAME = '.picknames2.data.pkl'
@@ -62,16 +66,7 @@ class NameSelectController(object):
 
 
     def __init__(self, parent_view):
-        self.candidate_words = set()
-        self.word1_selected_count = {}
-        self.word2_selected_count = {}
-        self.word1_refused_count = {}
-        self.word2_refused_count = {}
-        self.refused_names = set()  # (w1, w2)
-        self.selected_names = set() # (w1, w2)
-
-        self.candidate_names_with_score = []   # (w1, w2, score)
-        self.candidate_name = None  # (w,1 w2)
+        self.reset_state()
 
         self.frame = tkinter.Frame(parent_view)
         self.frame.pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
@@ -105,10 +100,32 @@ class NameSelectController(object):
         self.select_button = choice_bb.add('✔', state=tkinter.DISABLED, command=self.select_current_candidate_name)
         self.refuse_button = choice_bb.add( '✖', state=tkinter.DISABLED, command=self.refuse_current_candidate_name)
 
-        self.spelling_pair_controllers = []
-
         # restore state
         self.load_state()
+
+
+    def reset_state(self):
+        self.candidate_words = set()
+        self.word1_selected_count = {}
+        self.word2_selected_count = {}
+        self.word1_refused_count = {}
+        self.word2_refused_count = {}
+        self.refused_names = set()  # (w1, w2)
+        self.selected_names = set() # (w1, w2)
+
+        self.candidate_names_with_score = []   # (w1, w2, score)
+        self.candidate_name = None  # (w,1 w2)
+
+        self.spelling_pair_controllers = []
+
+
+    def reload_state(self):
+        for spc in self.spelling_pair_controllers:
+            spc.destroy()
+
+        self.reset_state()
+        self.load_state()
+
 
     def load_state(self):
         spellings = []
@@ -177,6 +194,8 @@ class NameSelectController(object):
 
         #names = [w1 + w2 for (w1, w2) in self.refused_names]
         #self.refused_slb.setlist(names)
+
+        self.update_candidate_names_with_score()
 
 
     def save_state(self):
@@ -311,23 +330,31 @@ class App(object):
         self.button = tkinter.Button(root, text='離開', fg="red", command=self.quit)
         self.button.pack(side=tkinter.RIGHT)
 
+        self.button = tkinter.Button(root, text='重新載入', fg="red", command=self.reload)
+        self.button.pack(side=tkinter.RIGHT)
+
         self.button = tkinter.Button(root, text='儲存後離開', fg="red", command=self.save_and_quit)
         self.button.pack(side=tkinter.RIGHT)
 
         self.button = tkinter.Button(root, text='儲存', fg="red", command=self.save)
         self.button.pack(side=tkinter.RIGHT)
 
-        self.nsc.update_candidate_names_with_score()
 
     def save(self):
         self.nsc.save_state()
+
 
     def save_and_quit(self):
         self.nsc.save_state()
         self.root.quit()
 
+
     def quit(self):
         self.root.quit()
+
+
+    def reload(self):
+        self.nsc.reload_state()
 
 
 def main():
